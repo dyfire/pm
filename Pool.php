@@ -84,7 +84,8 @@ class Pool
 
     public function run()
     {
-        for ($i = 0; $i < $this->num; $i++) {
+        $real_num = $this->num - count($this->workers);
+        for ($i = 0; $i < $real_num; $i++) {
             call_user_func($this->routine);
         }
     }
@@ -136,6 +137,7 @@ class Pool
 
     public function clean()
     {
+        // SIG_IGN 忽略信号处理,pcntl_signal(SIGHUP, SIG_IGN);
         // SIG_BLOCK = 0
         foreach ($this->workers as $k => $v) {
             if (!posix_kill($k, 0)) {
