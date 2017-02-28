@@ -1,2 +1,5 @@
 # pm
-process manager
+
+## php多进程处理程序
+## 主进程负责对worker进程做管理，子进程负责处理业务逻辑
+
