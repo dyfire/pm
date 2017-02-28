@@ -14,14 +14,13 @@ class Pool
     private $routine = null;
     private $running = true;
 
-    private function __construct()
+    protected function __construct()
     {
-        $running = true;
-        pcntl_signal(SIGTERM, function (&$running) {
-            $running = false;
-            Util::log("shutdown");
-        }, false);
-        $this->running = $running;
+        pcntl_signal(SIGHUP, SIG_IGN);
+        pcntl_signal(SIGPIPE, SIG_IGN);
+        pcntl_signal(SIGINT, [$this, 'quit'], false);
+        pcntl_signal(SIGQUIT, [$this, 'quit'], false);
+        pcntl_signal(SIGTERM, [$this, 'quit'], false);
     }
 
     public static function getInstance()
@@ -92,18 +91,18 @@ class Pool
 
     public function execute()
     {
-        $running = $this->running;
         $stop = false;
         pcntl_signal(SIGUSR1, function () use (&$stop) {
+            Util::log('get sigusr1');
             $stop = true;
         });
 
-
         $this->run();
 
-        while ($running) {
+        while ($this->running) {
+            pcntl_signal_dispatch();
+
             if ($stop) {
-                pcntl_signal_dispatch();
                 $this->kill(SIGTERM);
                 $stop = false;
             }
@@ -112,6 +111,8 @@ class Pool
 
             usleep(40000);
         }
+
+        $this->shutdown();
     }
 
     public function kill($signal)
@@ -121,15 +122,14 @@ class Pool
         }
     }
 
-    public function wait()
+    public function wait($block = false)
     {
         // 等待子进程返回的状态
         // $pid 发生错误时返回-1
         foreach ($this->workers as $k => $v) {
-            $pid = pcntl_waitpid($k, $status, WNOHANG);
+            $pid = pcntl_waitpid($k, $status, $block ? 0 : WNOHANG);
 
             if ($pid > 0) {
-                printf($pid . "\n");
                 unset($this->workers[$pid]);
             }
         }
@@ -144,6 +144,20 @@ class Pool
                 unset($this->workers[$k]);
             }
         }
+    }
+
+    public function shutdown()
+    {
+        Util::log('shut');
+        $this->kill(SIGTERM);
+        $this->wait();
+        $this->clean();
+    }
+
+    public function quit()
+    {
+        Util::log('quit');
+        $this->running = false;
     }
 
     public function getWorkersNum()
