@@ -1,0 +1,10 @@
+{
+    "name": "pm",
+    "author": "dyfire@gmail.com",
+    "description": "process manage",
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {"Pm\\": "src"}
+    }
+}
