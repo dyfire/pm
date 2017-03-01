@@ -6,7 +6,7 @@ use Pm\Pms;
 
 $params = getopt('', ['start::']);
 $status = isset($params['start']) ? $params['start'] : '';
-$pms = new Pms('app.pid', true);
+$pms = new Pms('app.pid', false);
 
 switch ($status) {
     case 'start':

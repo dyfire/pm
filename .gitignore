@@ -1,2 +1,4 @@
 vendor
 example/app.pid
+.idea/
+log

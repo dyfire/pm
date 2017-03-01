@@ -53,6 +53,12 @@ class Pool
                 }
             };
         } elseif (is_array($runtine)) {
+            $this->routine = function () use ($runtine) {
+                if (0 === $this->fork()) {
+                    call_user_func_array($runtine);
+                    exit(0);
+                }
+            };
 
         } else {
 
