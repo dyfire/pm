@@ -38,7 +38,6 @@ class Pool
 
         if (is_callable($runtine)) {
             $this->routine = function () use ($runtine) {
-
                 // 子进程则执行
                 if (0 === $this->fork()) {
                     $runtine();
@@ -53,6 +52,10 @@ class Pool
                     }
                 }
             };
+        } elseif (is_array($runtine)) {
+
+        } else {
+
         }
 
         $this->execute();
@@ -68,6 +71,11 @@ class Pool
         }
 
         echo "done\n";
+    }
+
+    public function restart($pid)
+    {
+        posix_kill($pid, SIGUSR1);
     }
 
     public function fork()
@@ -97,14 +105,15 @@ class Pool
             $stop = true;
         });
 
-        $this->run();
 
         while ($this->running) {
+            $this->run();
             pcntl_signal_dispatch();
 
             if ($stop) {
                 $this->kill(SIGTERM);
                 $stop = false;
+                Util::log('restart');
             }
 
             $this->wait();
@@ -124,8 +133,7 @@ class Pool
 
     public function wait($block = false)
     {
-        // 等待子进程返回的状态
-        // $pid 发生错误时返回-1
+        // 等待子进程返回的状态, $pid 发生错误时返回-1
         foreach ($this->workers as $k => $v) {
             $pid = pcntl_waitpid($k, $status, $block ? 0 : WNOHANG);
 
