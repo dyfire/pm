@@ -25,9 +25,9 @@ switch ($status) {
     default:
         die(<<<USAGE
 usage:
-    start:\tpm --start --app={app/command} -n {n} [--pid={pid} [--pidfile={pidfile}]] [--wait-bootstrap={senconds}]
-    stop:\tpm --stop [--pid={pid} [--pidfile={pidfile}]]
-    reload:\tpm --reload [--pid={pid} [--pidfile={pidfile}]]
+    start:\tpm --start]
+    stop:\tpm --stop]
+    reload:\tpm --restart]
 
 USAGE
         );
