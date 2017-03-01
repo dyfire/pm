@@ -41,6 +41,10 @@ class Util
 
     public static function log($data)
     {
-        file_put_contents('/home/wangjianwen/study/fork/pm/example/log', sprintf('[%s] %s \n', date('Y-m-d H:i:s'), $data, FILE_APPEND));
+        file_put_contents(
+            dirname(__DIR__) . 'log',
+            sprintf("[%s] %s \n", date('Y-m-d H:i:s'), $data),
+            FILE_APPEND
+        );
     }
 }
