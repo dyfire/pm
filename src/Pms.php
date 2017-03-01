@@ -15,6 +15,10 @@ class Pms
 
     public function start($n, $runtine)
     {
+        if ($n <= 0) {
+            $n = 1;
+        }
+
         if ($this->daemon) {
             Util::daemon();
         }
@@ -22,15 +26,6 @@ class Pms
         $pid = getmypid();
         if (!file_exists($this->app)) {
             file_put_contents($this->app, $pid);
-        } else {
-            $app = $this->app;
-            register_shutdown_function(function () use ($app) {
-                Util::log('shutdown');
-
-                if (file_exists($this->app)) {
-                    unlink($app);
-                }
-            });
         }
 
         Pool::getInstance()->start($n, $runtine);
@@ -39,9 +34,24 @@ class Pms
     public function stop()
     {
         if (file_exists($this->app)) {
-            $pid = file_get_contents($this->app);
+            $app = $this->app;
+            register_shutdown_function(function () use ($app) {
+                Util::log('shutdown');
+
+                unlink($app);
+            });
         }
 
-        Pool::getInstance()->stop($pid);
+        Pool::getInstance()->stop($this->getPid());
+    }
+
+    public function restart()
+    {
+        Pool::getInstance()->restart($this->getPid());
+    }
+
+    public function getPid()
+    {
+        return file_get_contents($this->app);
     }
 }
